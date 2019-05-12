@@ -8,16 +8,18 @@ type Bounty @entity{
   paysTokens: Boolean!
   bountyStage: BountyStages!
   balance: BigInt!
+  fulfillmentIds: [BigInt!]
 }
 
 type Fulfillment @entity{
       id: ID!
+      bountyId: BigInt!
       accepted: Boolean!
       fulfiller: Bytes!
       data: String!
 }
 
-enum BountyStages {
+enum BountyStages @entity{
       Draft,
       Active,
       Dead

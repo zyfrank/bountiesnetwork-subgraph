@@ -45,4 +45,20 @@ dataSources:
       callHandlers:
         - function: issueBounty(address,uint256,string,uint256,address,bool,address)
           handler: handleIssueBounty
+        - function: issueAndActivateBounty(address,uint,string,uint256,address,bool,address,uint256)
+          handler: handleIssueAndActivateBounty
+        - function: fulfillBounty(uint,string)
+          handler: handleFulfillBounty
+        - function: updateFulfillment(uint,uint,string)
+          handler: handleUpdateFulfillment
+        - function: changeBountyDeadline(uint,uint)
+          handler: handleChangeBountyDeadline
+        - function: changeBountyData(uint,string)
+          handler: handleChangeBountyData
+        - function: changeBountyFulfillmentAmount(uint,uint)
+          handler: handleChangeBountyFulfillmentAmount
+        - function: changeBountyArbiter(uint,address)
+          handler: handleChangeBountyArbiter
+        - function: increasePayout(uint,uint,uint)
+          handler: handleIncreasePayout
       file: ./src/mapping.ts
