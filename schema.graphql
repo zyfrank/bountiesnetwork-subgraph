@@ -1,6 +1,24 @@
-type Gravatar @entity {
+type Bounty @entity{
   id: ID!
-  owner: Bytes!
-  displayName: String!
-  imageUrl: String!
+  issuer: Bytes!
+  deadline: BigInt!
+  data: String!
+  fulfillmentAmount: BigInt!
+  arbiter: Bytes!
+  paysTokens: Boolean!
+  bountyStage: BountyStages!
+  balance: BigInt!
+}
+
+type Fulfillment @entity{
+      id: ID!
+      accepted: Boolean!
+      fulfiller: Bytes!
+      data: String!
+}
+
+enum BountyStages {
+      Draft,
+      Active,
+      Dead
 }
