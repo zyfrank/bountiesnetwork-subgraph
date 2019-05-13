@@ -1,9 +1,8 @@
-import {
-  BigInt
-} from "@graphprotocol/graph-ts";
+import { BigInt, json} from "@graphprotocol/graph-ts";
 
-import { BountyIssued, BountyActivated, BountyFulfilled, FulfillmentUpdated, FulfillmentAccepted, BountyKilled, ContributionAdded, DeadlineExtended, BountyChanged, IssuerTransferred, PayoutIncreased, IssueBountyCall, IssueAndActivateBountyCall, FulfillBountyCall, UpdateFulfillmentCall, ChangeBountyDeadlineCall, ChangeBountyDataCall, ChangeBountyFulfillmentAmountCall, ChangeBountyArbiterCall, IncreasePayoutCall} from './types/BountiesNetwork/BountiesNetwork'
-import { Bounty } from './types/schema'
+import { BountyIssued, BountyActivated, BountyFulfilled, FulfillmentUpdated, FulfillmentAccepted, BountyKilled, ContributionAdded, DeadlineExtended, BountyChanged, IssuerTransferred, PayoutIncreased, IssueBountyCall, IssueAndActivateBountyCall, FulfillBountyCall, UpdateFulfillmentCall, ChangeBountyDeadlineCall, ChangeBountyDataCall, ChangeBountyFulfillmentAmountCall, ChangeBountyArbiterCall, IncreasePayoutCall, ActivateBountyCall, ContributeCall} from './types/BountiesNetwork/BountiesNetwork'
+
+import { Bounty, Issuer } from './types/schema'
 
 
 
@@ -14,8 +13,10 @@ export function handleBountyIssued(event: BountyIssued): void {
 export function handleBountyActivated(event: BountyActivated): void {
   let id = event.params.bountyId.toString()
   let bounty = Bounty.load(id)
-  bounty.bountyStage = "Active"
-  bounty.save()
+  if (bounty != null) {
+    bounty.bountyStage = "Active"
+    bounty.save()
+  }
 }
 
 export function handleBountyFulfilled(event: BountyFulfilled): void {
@@ -34,22 +35,26 @@ export function handleFulfillmentAccepted(event: FulfillmentAccepted): void {
 export function handleBountyKilled(event: BountyKilled): void {
   let id = event.params.bountyId.toString()
   let bounty = Bounty.load(id)
-  bounty.bountyStage ="Dead"
+  if(bounty != null) {
+    bounty.bountyStage ="Dead"
+  }
 }
 
 export function handleContributionAdded(event: ContributionAdded): void {
-  let id = event.params.bountyId.toString()
+ //dummy
+ /* let id = event.params.bountyId.toString()
   let bounty = Bounty.load(id)
-  bounty.balance = bounty.balance + event.params.value
-  bounty.save()
+  //bounty.balance = bounty.balance + event.params.value
+  bounty.save()*/
 }
 
 export function handleDeadlineExtended(event: DeadlineExtended): void {
   let id = event.params.bountyId.toString()
   let bounty = Bounty.load(id)
-  bounty.deadline = event.params.newDeadline
-  bounty.save()
-
+  if (bounty != null){
+    bounty.deadline = event.params.newDeadline
+    bounty.save()
+  }
 }
 
 export function handleBountyChanged(event: BountyChanged): void {
@@ -59,8 +64,34 @@ export function handleBountyChanged(event: BountyChanged): void {
 export function handleIssuerTransferred(event: IssuerTransferred): void {
   let id = event.params._bountyId.toString()
   let bounty = Bounty.load(id)
-  bounty.issuer = event.params._newIssuer
-  bounty.save()
+  if (bounty != null){
+    let issuer = Issuer.load(event.params._newIssuer.toHexString())
+    if (issuer == null){
+      issuer = new Issuer(event.params._newIssuer.toHexString())
+    }
+    if (issuer.bounties == null)
+    {
+      issuer.bounties = [event.params._bountyId]
+      issuer.number = BigInt.fromI32(1)
+    }else{
+       issuer.bounties.push(event.params._bountyId)
+       issuer.number += BigInt.fromI32(1)
+    }
+    issuer.save()
+
+    issuer = Issuer.load(bounty.issuer.toHexString())
+    if ((issuer != null) && (issuer.bounties!= null)){
+      let index = issuer.bounties.indexOf(event.params._bountyId)
+      if (index >= 0){
+        issuer.bounties.splice(index, 1)
+        issuer.number -= BigInt.fromI32(1)
+      }
+    }
+    issuer.save()
+
+    bounty.issuer = event.params._newIssuer
+    bounty.save()
+  }
 }
 
 export function handlePayoutIncreased(event: PayoutIncreased): void {
@@ -70,43 +101,77 @@ export function handlePayoutIncreased(event: PayoutIncreased): void {
 
 export function handleIssueBounty(call: IssueBountyCall): void {
   let id = call.outputs.value0.toString();
-  let bounty = Bounty.load(id)
-  if (bounty != null){
+  let bounty = new Bounty(id)
+
   bounty.issuer = call.inputs._issuer
   bounty.deadline = call.inputs._deadline
   bounty.data = call.inputs._data
   bounty.fulfillmentAmount = call.inputs._fulfillmentAmount
   bounty.arbiter = call.inputs._arbiter
   bounty.paysTokens = call.inputs._paysTokens
+  bounty.balance = BigInt.fromI32(0) 
   bounty.bountyStage = "Draft"
   bounty.save()
+
+  let issuer = Issuer.load(bounty.issuer.toHexString())
+  if (issuer == null){
+    issuer = new Issuer(bounty.issuer.toHexString())
+    
   }
+  if (issuer.bounties == null)
+  {
+    issuer.bounties = [call.outputs.value0]
+    issuer.number = BigInt.fromI32(1)
+  }else{
+     issuer.bounties.push(call.outputs.value0)
+     issuer.number += BigInt.fromI32(1)
+  }
+  issuer.save()
+
 }
 
 export function handleIssueAndActivateBounty(call: IssueAndActivateBountyCall): void {
   let id = call.outputs.value0.toString();
-  let bounty = Bounty.load(id)
-  if (bounty != null){
+  
+  let bounty = new Bounty(id)
   bounty.issuer = call.inputs._issuer
   bounty.deadline = call.inputs._deadline
   bounty.data = call.inputs._data
   bounty.fulfillmentAmount = call.inputs._fulfillmentAmount
   bounty.arbiter = call.inputs._arbiter
   bounty.paysTokens = call.inputs._paysTokens
- // bounty.balance = BignInt.fromI32(0) 
   bounty.bountyStage = "Active"
   bounty.balance = call.inputs._value
   bounty.save()
+
+  let issuer = Issuer.load(bounty.issuer.toHexString())
+  if (issuer == null){
+    issuer = new Issuer(bounty.issuer.toHexString())
   }
+  if (issuer.bounties == null)
+  {
+    issuer.bounties = [call.outputs.value0]
+    issuer.number = BigInt.fromI32(1)
+  }else{
+     issuer.bounties.push(call.outputs.value0)
+     issuer.number += BigInt.fromI32(1)
+  }
+  issuer.save()
+
+
 }
 
 export function handleFulfillBounty(call: FulfillBountyCall): void {
   let id = call.inputs._bountyId.toString();
   let bounty = Bounty.load(id)
   if (bounty != null){
-    let fulfillments = bounty.fulfillments
-    //fulfillments.filter(item.bountyId.toString() === id)
-    bounty.save()
+  /*  let fulfillments = bounty.fulfillments
+    let fulfillment = {
+      data: call.inputs._data,
+      accepted: false
+    }
+    fulfillments.push(JSON.stringify(fulfillment))
+    bounty.save()*/
   }
 }
 
@@ -158,6 +223,24 @@ export function handleIncreasePayout(call: IncreasePayoutCall): void {
   if (bounty != null){
     bounty.balance += call.inputs._value
     bounty.fulfillmentAmount = call.inputs._newFulfillmentAmount
+    bounty.save()
+  }
+}
+
+export function handleActivateBounty(call: ActivateBountyCall): void {
+  let id = call.inputs._bountyId.toString();
+  let bounty = Bounty.load(id)
+  if (bounty != null){
+    bounty.balance += call.inputs._value
+    bounty.save()
+  }
+}
+
+export function handleContribute(call: ContributeCall): void {
+  let id = call.inputs._bountyId.toString();
+  let bounty = Bounty.load(id)
+  if (bounty != null){
+    bounty.balance += call.inputs._value
     bounty.save()
   }
 }

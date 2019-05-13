@@ -45,20 +45,24 @@ dataSources:
       callHandlers:
         - function: issueBounty(address,uint256,string,uint256,address,bool,address)
           handler: handleIssueBounty
-        - function: issueAndActivateBounty(address,uint,string,uint256,address,bool,address,uint256)
+        - function: issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
           handler: handleIssueAndActivateBounty
-        - function: fulfillBounty(uint,string)
+        - function: fulfillBounty(uint256,string)
           handler: handleFulfillBounty
-        - function: updateFulfillment(uint,uint,string)
+        - function: updateFulfillment(uint256,uint256,string)
           handler: handleUpdateFulfillment
-        - function: changeBountyDeadline(uint,uint)
+        - function: changeBountyDeadline(uint256,uint256)
           handler: handleChangeBountyDeadline
-        - function: changeBountyData(uint,string)
+        - function: changeBountyData(uint256,string)
           handler: handleChangeBountyData
-        - function: changeBountyFulfillmentAmount(uint,uint)
+        - function: changeBountyFulfillmentAmount(uint256,uint256)
           handler: handleChangeBountyFulfillmentAmount
-        - function: changeBountyArbiter(uint,address)
+        - function: changeBountyArbiter(uint256,address)
           handler: handleChangeBountyArbiter
-        - function: increasePayout(uint,uint,uint)
+        - function: increasePayout(uint256,uint256,uint256)
           handler: handleIncreasePayout
+        - function: activateBounty(uint256,uint256)
+          handler: handleActivateBounty
+        - function: contribute(uint256,uint256)
+          handler: handleContribute
       file: ./src/mapping.ts
