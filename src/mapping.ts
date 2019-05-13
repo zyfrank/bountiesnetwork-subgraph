@@ -2,7 +2,7 @@ import { BigInt, json} from "@graphprotocol/graph-ts";
 
 import { BountyIssued, BountyActivated, BountyFulfilled, FulfillmentUpdated, FulfillmentAccepted, BountyKilled, ContributionAdded, DeadlineExtended, BountyChanged, IssuerTransferred, PayoutIncreased, IssueBountyCall, IssueAndActivateBountyCall, FulfillBountyCall, UpdateFulfillmentCall, ChangeBountyDeadlineCall, ChangeBountyDataCall, ChangeBountyFulfillmentAmountCall, ChangeBountyArbiterCall, IncreasePayoutCall, ActivateBountyCall, ContributeCall} from './types/BountiesNetwork/BountiesNetwork'
 
-import { Bounty, Issuer } from './types/schema'
+import { Bounty, Issuer, Contributer, Fulfillment, Fulfiller} from './types/schema'
 
 
 
@@ -74,7 +74,7 @@ export function handleIssuerTransferred(event: IssuerTransferred): void {
       issuer.bounties = [event.params._bountyId]
       issuer.number = BigInt.fromI32(1)
     }else{
-       issuer.bounties.push(event.params._bountyId)
+       issuer.bounties = issuer.bounties.concat([event.params._bountyId])
        issuer.number += BigInt.fromI32(1)
     }
     issuer.save()
@@ -123,7 +123,7 @@ export function handleIssueBounty(call: IssueBountyCall): void {
     issuer.bounties = [call.outputs.value0]
     issuer.number = BigInt.fromI32(1)
   }else{
-     issuer.bounties.push(call.outputs.value0)
+     issuer.bounties = issuer.bounties.concat([call.outputs.value0])
      issuer.number += BigInt.fromI32(1)
   }
   issuer.save()
@@ -153,7 +153,7 @@ export function handleIssueAndActivateBounty(call: IssueAndActivateBountyCall): 
     issuer.bounties = [call.outputs.value0]
     issuer.number = BigInt.fromI32(1)
   }else{
-     issuer.bounties.push(call.outputs.value0)
+     issuer.bounties = issuer.bounties.concat([call.outputs.value0])
      issuer.number += BigInt.fromI32(1)
   }
   issuer.save()
@@ -165,13 +165,35 @@ export function handleFulfillBounty(call: FulfillBountyCall): void {
   let id = call.inputs._bountyId.toString();
   let bounty = Bounty.load(id)
   if (bounty != null){
-  /*  let fulfillments = bounty.fulfillments
-    let fulfillment = {
-      data: call.inputs._data,
-      accepted: false
+    let fulfillmentIds = bounty.fulfillments
+    let fulfillmentId = id + '_' + BigInt.fromI32(fulfillmentIds.length).toString()
+    let fulfillment = new Fulfillment(fulfillmentId)
+    let addr = call.transaction.from
+    fulfillment.fulfiller = addr
+    fulfillment.accepted = false 
+    fulfillment.data = call.inputs._data
+    fulfillment.save()
+
+    let fulfiller = Fulfiller.load(addr.toHexString())
+    if (fulfiller == null){
+      fulfiller = new Fulfiller(addr.toHexString())
     }
-    fulfillments.push(JSON.stringify(fulfillment))
-    bounty.save()*/
+    if (fulfiller.fulfillments == null){
+      fulfiller.fulfillments = [fulfillmentId]
+      fulfiller.number = BigInt.fromI32(1)
+    }else{
+      fulfiller.fulfillments = fulfiller.fulfillments.concat([fulfillmentId])
+      fulfiller.number += BigInt.fromI32(1)
+    }
+    fulfiller.save()
+
+    if (bounty.fulfillments == null){
+      bounty.fulfillments = [fulfillmentId]
+    }else{
+      bounty.fulfillments = bounty.fulfillments.concat([fulfillmentId])
+    }
+    bounty.save()
+
   }
 }
 
@@ -237,10 +259,25 @@ export function handleActivateBounty(call: ActivateBountyCall): void {
 }
 
 export function handleContribute(call: ContributeCall): void {
+
   let id = call.inputs._bountyId.toString();
   let bounty = Bounty.load(id)
   if (bounty != null){
     bounty.balance += call.inputs._value
     bounty.save()
+
+    let addr = call.transaction.from.toHexString()
+    let contributer = Contributer.load(addr)
+    if (contributer == null){
+      contributer = new Contributer(addr)
+    }
+    if (contributer.bounties == null){
+      contributer.bounties = [call.inputs._bountyId]
+      contributer.number = BigInt.fromI32(1)
+    }else{
+      contributer.bounties = contributer.bounties.concat([call.inputs._bountyId])
+      contributer.number += BigInt.fromI32(1)
+    }
+    contributer.save()
   }
 }

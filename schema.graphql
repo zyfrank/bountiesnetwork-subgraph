@@ -8,16 +8,16 @@ type Bounty @entity{
   paysTokens: Boolean!
   bountyStage: BountyStages!
   balance: BigInt!
-  fulfillments: [String!]
+  fulfillments: [Fulfillment!]
 }
-#
-#type Fulfillment @entity{
-##      id: ID!
-#      accepted: Boolean!
-#      fulfiller: Bytes!
-#      data: String!
-#}
-#*/
+
+type Fulfillment @entity{
+      id: ID!
+      accepted: Boolean!
+      fulfiller: Bytes!
+      data: String!
+}
+
 
 type Issuer @entity{
   id: ID!
@@ -25,14 +25,16 @@ type Issuer @entity{
   number: BigInt!
 }
 
-type Contributor @entity{
+type Contributer @entity{
   id: ID!
   bounties: [BigInt!]
+  number: BigInt!
 }
 
 type Fulfiller @entity{
   id: ID!
-  bounties: [BigInt!]
+  fulfillments: [Fulfillment!]
+  number: BigInt!
 }
 
 enum BountyStages @entity{
