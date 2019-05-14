@@ -1,20 +1,22 @@
 type Bounty @entity{
   id: ID!
-  issuer: Bytes!
+  issuer: Issuer!
   deadline: BigInt!
   data: String!
   fulfillmentAmount: BigInt!
   arbiter: Bytes!
   paysTokens: Boolean!
+  tokenContract: Bytes!
   bountyStage: BountyStages!
   balance: BigInt!
   fulfillments: [Fulfillment!]
+  contributor: [Contributor!]
 }
 
 type Fulfillment @entity{
       id: ID!
       accepted: Boolean!
-      fulfiller: Bytes!
+      fulfiller: Fulfiller!
       data: String!
 }
 
@@ -25,9 +27,12 @@ type Issuer @entity{
   number: BigInt!
 }
 
-type Contributer @entity{
+type Contributor @entity{
   id: ID!
   bounties: [BigInt!]
+  funds: [BigInt!]
+  # 0 mean Ether, other token address
+  tokens: [Bytes!]
   number: BigInt!
 }
 
