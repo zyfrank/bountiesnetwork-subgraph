@@ -1,5 +1,8 @@
 type Bounty @entity{
   id: ID!
+
+  # for orderBy No of Bounty
+  no: BigInt!
   issuer: Issuer!
   deadline: BigInt!
   data: String!

@@ -65,4 +65,6 @@ dataSources:
           handler: handleActivateBounty
         - function: contribute(uint256,uint256)
           handler: handleContribute
+        - function: acceptFulfillment(uint256,uint256)
+          handler: handleAcceptFulfillment
       file: ./src/mapping.ts
