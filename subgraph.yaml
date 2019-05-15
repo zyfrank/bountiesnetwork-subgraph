@@ -19,29 +19,7 @@ dataSources:
       abis:
         - name: BountiesNetwork
           file: ./abis/BountiesNetwork.json
-      eventHandlers:
-        - event: BountyIssued(uint256)
-          handler: handleBountyIssued
-        - event: BountyActivated(uint256,address)
-          handler: handleBountyActivated
-        - event: BountyFulfilled(uint256,address,uint256)
-          handler: handleBountyFulfilled
-        - event: FulfillmentUpdated(uint256,uint256)
-          handler: handleFulfillmentUpdated
-        - event: FulfillmentAccepted(uint256,address,uint256)
-          handler: handleFulfillmentAccepted
-        - event: BountyKilled(uint256,address)
-          handler: handleBountyKilled
-        - event: ContributionAdded(uint256,address,uint256)
-          handler: handleContributionAdded
-        - event: DeadlineExtended(uint256,uint256)
-          handler: handleDeadlineExtended
-        - event: BountyChanged(uint256)
-          handler: handleBountyChanged
-        - event: IssuerTransferred(uint256,address)
-          handler: handleIssuerTransferred
-        - event: PayoutIncreased(uint256,uint256)
-          handler: handlePayoutIncreased
+
       callHandlers:
         - function: issueBounty(address,uint256,string,uint256,address,bool,address)
           handler: handleIssueBounty
@@ -67,4 +45,10 @@ dataSources:
           handler: handleContribute
         - function: acceptFulfillment(uint256,uint256)
           handler: handleAcceptFulfillment
+        - function: killBounty(uint256)
+          handler: handleKillBounty
+        - function: extendDeadline(uint256,uint256)
+          handler: handleExtendDeadline
+        - function: transferIssuer(uint256,address)
+          handler: handleTransferIssuer
       file: ./src/mapping.ts
